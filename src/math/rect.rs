@@ -89,6 +89,34 @@ impl Rect {
             && self.bottom() >= other.top()
     }
 
+    /// Returns a new `Rect` that includes all points of these two `Rect`s.
+    pub const fn combine_with(self, other: Rect) -> Rect {
+        let x = min_f32(self.x, other.x);
+        let y = min_f32(self.y, other.y);
+        let w = max_f32(self.right(), other.right()) - x;
+        let h = max_f32(self.bottom(), other.bottom()) - y;
+        Rect { x, y, w, h }
+    }
+
+    /// Returns an intersection rect if there is any intersection.
+    pub const fn intersect(&self, other: Rect) -> Option<Rect> {
+        let left = self.x.max(other.x);
+        let top = self.y.max(other.y);
+        let right = self.right().min(other.right());
+        let bottom = self.bottom().min(other.bottom());
+
+        if right < left || bottom < top {
+            return None;
+        }
+
+        Some(Rect {
+            x: left,
+            y: top,
+            w: right - left,
+            h: bottom - top,
+        })
+    }
+
     /// Translate rect origin by `offset` vector.
     pub const fn offset(self, offset: Vec2) -> Rect {
         Rect::new(self.x + offset.x, self.y + offset.y, self.w, self.h)
@@ -122,4 +150,13 @@ fn rect_contains_border() {
     assert!(rect.contains(vec2(1.0, 3.0)));
     assert!(rect.contains(vec2(3.0, 3.0)));
     assert!(rect.contains(vec2(2.0, 2.0)));
+}
+
+
+const fn min_f32(a: f32, b: f32) -> f32 {
+    if a < b { a } else { b }
+}
+
+const fn max_f32(a: f32, b: f32) -> f32 {
+    if a < b { b } else { a }
 }
