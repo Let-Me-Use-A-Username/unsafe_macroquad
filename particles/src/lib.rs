@@ -1064,7 +1064,7 @@ impl EmittersCache {
 
                 emitter.perform_render_pass(quad_gl, ctx);
 
-                if emitter.config.emitting == false {
+                if emitter.config.emitting == false && emitter.gpu_particles.is_empty(){
                     self.emitters_cache.push(i.take().unwrap().0);
                 }
             }
