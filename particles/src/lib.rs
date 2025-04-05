@@ -701,7 +701,7 @@ impl Emitter {
         }
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.gpu_particles.clear();
         self.cpu_counterpart.clear();
         self.last_emit_time = 0.0;
@@ -997,6 +997,22 @@ impl Emitter {
         self.perform_render_pass(quad_gl, ctx);
         self.end_render_pass(quad_gl, ctx);
     }
+
+    pub fn cleanup(&mut self, ctx: &mut dyn miniquad::RenderingBackend) {
+        // Delete GPU resources
+        // ctx.delete_pipeline(self.pipeline);
+        // ctx.delete_pipeline(self.post_processing_pipeline);
+        // ctx.delete_buffer(self.bindings.vertex_buffers[0]);
+        // ctx.delete_buffer(self.bindings.vertex_buffers[1]);
+        // ctx.delete_buffer(self.bindings.index_buffer);
+        // ctx.delete_render_pass(self.post_processing_pass);
+        
+        // Shrink vectors to minimum capacity
+        self.gpu_particles.clear();
+        self.gpu_particles.shrink_to_fit();
+        self.cpu_counterpart.clear();
+        self.cpu_counterpart.shrink_to_fit();
+    }
 }
 
 /// Multiple emitters drawn simultaneously.
@@ -1059,12 +1075,11 @@ impl EmittersCache {
         for i in &mut self.active_emitters {
             if let Some((emitter, pos)) = i {
                 emitter.position = *pos;
-
                 emitter.update(ctx, get_frame_time());
-
                 emitter.perform_render_pass(quad_gl, ctx);
 
                 if emitter.config.emitting == false && emitter.gpu_particles.is_empty(){
+                    emitter.cleanup(ctx);
                     self.emitters_cache.push(i.take().unwrap().0);
                 }
             }
@@ -1074,6 +1089,25 @@ impl EmittersCache {
         }
 
         self.active_emitters.retain(|emitter| emitter.is_some())
+    }
+
+    pub fn clear_empty(&mut self){
+        let new_active_emitters: Vec<_> = self.active_emitters
+        .iter_mut()
+        .filter(|e| {
+            e.is_some()
+        })
+        .map(|e| e.take())
+        .collect();
+    
+        self.active_emitters = new_active_emitters;
+    }
+    
+    pub fn should_clear(&mut self) -> bool{
+        let active_count = self.active_emitters.iter().filter(|e| e.is_some()).count();
+
+        self.active_emitters.capacity() > active_count * 2 && 
+        self.active_emitters.capacity() - active_count > 100
     }
 }
 

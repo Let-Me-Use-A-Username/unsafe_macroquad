@@ -98,12 +98,20 @@ impl Rect {
         Rect { x, y, w, h }
     }
 
+    const fn max_coord(a: f32, b: f32) -> f32 {
+        if a > b { a } else { b }
+    }
+    
+    const fn min_coord(a: f32, b: f32) -> f32 {
+        if a < b { a } else { b }
+    }
+
     /// Returns an intersection rect if there is any intersection.
     pub const fn intersect(&self, other: Rect) -> Option<Rect> {
-        let left = self.x.max(other.x);
-        let top = self.y.max(other.y);
-        let right = self.right().min(other.right());
-        let bottom = self.bottom().min(other.bottom());
+        let left = Self::max_coord(self.x, other.x);
+        let top = Self::max_coord(self.y, other.y);
+        let right = Self::min_coord(self.right(), other.right());
+        let bottom = Self::min_coord(self.bottom(), other.bottom());
 
         if right < left || bottom < top {
             return None;
