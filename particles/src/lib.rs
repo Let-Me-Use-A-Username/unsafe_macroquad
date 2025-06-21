@@ -1093,14 +1093,15 @@ impl EmittersCache {
 
     pub fn clear_empty(&mut self){
         let new_active_emitters: Vec<_> = self.active_emitters
-        .iter_mut()
-        .filter(|e| {
-            e.is_some()
-        })
-        .map(|e| e.take())
-        .collect();
+            .iter_mut()
+            .filter(|e| {
+                e.is_some()
+            })
+            .map(|e| e.take())
+            .collect();
     
         self.active_emitters = new_active_emitters;
+        self.active_emitters.shrink_to_fit();
     }
     
     pub fn should_clear(&mut self) -> bool{

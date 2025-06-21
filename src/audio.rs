@@ -130,14 +130,14 @@ pub async fn load_sound_from_bytes(data: &[u8]) -> Result<Sound, Error> {
     Ok(Sound(Arc::new(QuadSndSoundGuarded(sound))))
 }
 
-pub fn play_sound_once(sound: &Sound) {
+pub fn play_sound_once(sound: &Sound, volume: f32) {
     let ctx = &mut get_context().audio_context;
 
     sound.0 .0.play(
         &mut ctx.native_ctx,
         PlaySoundParams {
             looped: false,
-            volume: 1.0,
+            volume: volume,
         },
     );
 }
