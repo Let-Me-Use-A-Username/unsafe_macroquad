@@ -272,14 +272,14 @@ pub async fn load_ttf_font(path: &str) -> Result<Font, Error> {
         .await
         .map_err(|_| Error::FontError("The Font file couldn't be loaded"))?;
 
-    load_ttf_font_from_bytes(&bytes[..])
+    load_ttf_font_from_bytes(&bytes[..]).await
 }
 
 /// Load font from bytes array, may be use in combination with include_bytes!
 /// ```ignore
 /// let font = load_ttf_font_from_bytes(include_bytes!("font.ttf"));
 /// ```
-pub fn load_ttf_font_from_bytes(bytes: &[u8]) -> Result<Font, Error> {
+pub async fn load_ttf_font_from_bytes(bytes: &[u8]) -> Result<Font, Error> {
     let atlas = Arc::new(Mutex::new(Atlas::new(
         get_quad_context(),
         miniquad::FilterMode::Linear,
